@@ -1,7 +1,14 @@
-export default function Home() {
+"use client";
+
+import AuthGuard from "@/components/AuthGuard";
+
+export default function HomePage() {
   return (
-    <div className="flex h-screen items-center justify-center bg-gray-100">
-      <h1 className="text-3xl font-bold text-blue-600">Notes SaaS Frontend</h1>
-    </div>
+    <AuthGuard>
+      <div className="p-6">
+        <h1 className="text-2xl font-bold">Dashboard</h1>
+        <p>Welcome to your notes SaaS</p>
+      </div>
+    </AuthGuard>
   );
 }
