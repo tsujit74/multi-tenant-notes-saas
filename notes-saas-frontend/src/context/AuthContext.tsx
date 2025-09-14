@@ -7,14 +7,20 @@ import {
   useState,
   ReactNode,
 } from "react";
-import { login as loginFn, logout as logoutFn, getUserFromToken, isTokenExpired } from "@/lib/auth";
+import { useRouter } from "next/navigation";
+import {
+  login as loginFn,
+  logout as logoutFn,
+  getUserFromToken,
+  isTokenExpired,
+} from "@/lib/auth";
 
 export interface User {
   id: number;
   email: string;
   role: "admin" | "member";
   tenantId: number;
-  plan: "free" | "pro"; // <-- added plan
+  plan: "free" | "pro";
 }
 
 interface AuthContextType {
@@ -29,9 +35,11 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
+
     if (token && !isTokenExpired(token)) {
       const storedUser = getUserFromToken(token);
       if (storedUser) {
@@ -45,9 +53,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     } else {
       localStorage.removeItem("token");
+      setUser(null);
+      router.push("/login");
     }
     setLoading(false);
-  }, []);
+  }, [router]);
 
   async function login(email: string, password: string) {
     const { token, user } = await loginFn(email, password);
@@ -67,6 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     logoutFn();
     localStorage.removeItem("token");
     setUser(null);
+    router.push("/login");
   }
 
   return (
