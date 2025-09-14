@@ -39,7 +39,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const token = localStorage.getItem("token");
     if (token && !isTokenExpired(token)) {
       const storedUser = getUserFromToken(token);
-      if (storedUser) setUser(storedUser);
+      if (storedUser) {
+        // normalize role
+        setUser({ ...storedUser, role: storedUser.role.toLowerCase() as User["role"] });
+      }
     } else {
       localStorage.removeItem("token"); // cleanup if expired/invalid
     }
@@ -48,17 +51,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Login
   async function login(email: string, password: string) {
-  try {
-    const { token, user } = await loginFn(email, password);
-    if (!token) throw new Error("Login failed, no token received");
-    localStorage.setItem("token", token);
-    setUser(user);
-  } catch (err) {
-    console.error("Login error:", err);
-    throw err;
-  }
-}
+    try {
+      const { token, user } = await loginFn(email, password);
+      if (!token) throw new Error("Login failed, no token received");
 
+      localStorage.setItem("token", token);
+
+      // normalize role
+      const normalizedUser = { ...user, role: user.role.toLowerCase() as User["role"] };
+      setUser(normalizedUser);
+    } catch (err) {
+      console.error("Login error:", err);
+      throw err;
+    }
+  }
 
   // Logout
   function logout() {
