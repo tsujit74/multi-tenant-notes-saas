@@ -5,12 +5,17 @@ interface DecodedToken {
   id: number;
   email: string;
   role: "admin" | "member";
+  plan: "free" | "pro";
   tenantId: number;
   exp: number;
 }
 
+interface LoginResponse {
+  token: string;
+}
+
 export async function login(email: string, password: string) {
-  const res = await api.post("/auth/login", { email, password });
+  const res = await api.post<LoginResponse>("/auth/login", { email, password });
 
   const { token } = res.data;
   if (!token) throw new Error("No token in login response");
@@ -18,7 +23,6 @@ export async function login(email: string, password: string) {
   localStorage.setItem("token", token);
   return { token, user: getUserFromToken(token) };
 }
-
 
 export function logout() {
   if (typeof window !== "undefined") {
@@ -35,7 +39,6 @@ export function getUserFromToken(token: string) {
     return null;
   }
 }
-
 
 export function isTokenExpired(token: string): boolean {
   try {

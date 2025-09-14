@@ -1,12 +1,13 @@
 "use client";
+
 import { useEffect, useState } from "react";
-import { fetchNotes, createNote, updateNote, deleteNote } from "@/lib/notes";
+import { fetchNotes, createNote, updateNote, deleteNote, Note } from "@/lib/notes";
 import AuthGuard from "@/components/AuthGuard";
 import { useAuth } from "@/context/AuthContext";
 
 export default function NotesPage() {
-  const { user } = useAuth(); // get user info (plan will come from backend)
-  const [notes, setNotes] = useState<any[]>([]);
+  const { user } = useAuth();
+  const [notes, setNotes] = useState<Note[]>([]);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -20,7 +21,8 @@ export default function NotesPage() {
       setLoading(true);
       const data = await fetchNotes();
       setNotes(data);
-    } catch {
+    } catch (err) {
+      console.error(err);
       setError("Failed to load notes");
     } finally {
       setLoading(false);
@@ -29,8 +31,8 @@ export default function NotesPage() {
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
+    setError("");
 
-    // Restriction: Free users only max 3 notes
     if (user?.plan === "free" && notes.length >= 3) {
       setError("Free plan allows only 3 notes. Upgrade to Pro!");
       return;
@@ -41,7 +43,8 @@ export default function NotesPage() {
       setTitle("");
       setContent("");
       loadNotes();
-    } catch {
+    } catch (err) {
+      console.error(err);
       setError("Failed to create note");
     }
   }
@@ -55,7 +58,8 @@ export default function NotesPage() {
       setEditTitle("");
       setEditContent("");
       loadNotes();
-    } catch {
+    } catch (err) {
+      console.error(err);
       setError("Failed to update note");
     }
   }
@@ -64,7 +68,8 @@ export default function NotesPage() {
     try {
       await deleteNote(id);
       loadNotes();
-    } catch {
+    } catch (err) {
+      console.error(err);
       setError("Failed to delete note");
     }
   }
@@ -79,7 +84,6 @@ export default function NotesPage() {
         <h1 className="text-2xl font-bold mb-4">Notes</h1>
         {error && <p className="text-red-500 mb-4">{error}</p>}
 
-        {/* Create Form */}
         <form onSubmit={handleCreate} className="mb-6 flex flex-col gap-2">
           <input
             value={title}
@@ -107,7 +111,6 @@ export default function NotesPage() {
           </button>
         </form>
 
-        {/* Notes List */}
         {loading ? (
           <p>Loading...</p>
         ) : notes.length === 0 ? (

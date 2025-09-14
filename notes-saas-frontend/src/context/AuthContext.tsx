@@ -7,18 +7,14 @@ import {
   useState,
   ReactNode,
 } from "react";
-import {
-  login as loginFn,
-  logout as logoutFn,
-  getUserFromToken,
-  isTokenExpired,
-} from "@/lib/auth";
+import { login as loginFn, logout as logoutFn, getUserFromToken, isTokenExpired } from "@/lib/auth";
 
-interface User {
+export interface User {
   id: number;
   email: string;
   role: "admin" | "member";
   tenantId: number;
+  plan: "free" | "pro"; // <-- added plan
 }
 
 interface AuthContextType {
@@ -34,39 +30,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Load user from token on mount
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token && !isTokenExpired(token)) {
       const storedUser = getUserFromToken(token);
       if (storedUser) {
-        // normalize role
-        setUser({ ...storedUser, role: storedUser.role.toLowerCase() as User["role"] });
+        setUser({
+          id: storedUser.id,
+          email: storedUser.email,
+          role: storedUser.role.toLowerCase() as User["role"],
+          tenantId: storedUser.tenantId,
+          plan: storedUser.plan,
+        });
       }
     } else {
-      localStorage.removeItem("token"); // cleanup if expired/invalid
+      localStorage.removeItem("token");
     }
     setLoading(false);
   }, []);
 
-  // Login
   async function login(email: string, password: string) {
-    try {
-      const { token, user } = await loginFn(email, password);
-      if (!token) throw new Error("Login failed, no token received");
+    const { token, user } = await loginFn(email, password);
+    if (!token || !user) throw new Error("Login failed");
 
-      localStorage.setItem("token", token);
-
-      // normalize role
-      const normalizedUser = { ...user, role: user.role.toLowerCase() as User["role"] };
-      setUser(normalizedUser);
-    } catch (err) {
-      console.error("Login error:", err);
-      throw err;
-    }
+    localStorage.setItem("token", token);
+    setUser({
+      id: user.id,
+      email: user.email,
+      role: user.role.toLowerCase() as User["role"],
+      tenantId: user.tenantId,
+      plan: user.plan,
+    });
   }
 
-  // Logout
   function logout() {
     logoutFn();
     localStorage.removeItem("token");
@@ -74,7 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

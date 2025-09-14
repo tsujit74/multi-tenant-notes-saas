@@ -8,6 +8,7 @@ api.interceptors.request.use((config) => {
   if (typeof window !== "undefined") {
     const token = localStorage.getItem("token");
     if (token) {
+      config.headers = config.headers || {};
       config.headers.Authorization = `Bearer ${token}`;
     }
   }
@@ -17,7 +18,6 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (res) => res,
   (err) => {
-    // Auto logout if token expired/invalid
     if (err.response?.status === 401) {
       localStorage.removeItem("token");
       if (typeof window !== "undefined") {

@@ -8,12 +8,12 @@ export default function LoginPage() {
   const { login } = useAuth();
   const router = useRouter();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [error, setError] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
     setLoading(true);
@@ -21,8 +21,12 @@ export default function LoginPage() {
     try {
       await login(email.trim(), password);
       router.push("/");
-    } catch (err: any) {
-      setError(err.message || "Invalid credentials");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Invalid credentials");
+      }
     } finally {
       setLoading(false);
     }

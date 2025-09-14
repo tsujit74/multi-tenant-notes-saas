@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import RoleGuard from "@/components/RoleGaurd";
 import api from "@/lib/api";
 
+// Types for tenant and users
 interface Tenant {
   id: number;
   slug: string;
@@ -16,14 +17,21 @@ interface User {
   role: "admin" | "member";
 }
 
+// Axios response type
+interface TenantResponse {
+  tenant: Tenant;
+  users: User[];
+}
+
 export default function AdminDashboard() {
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Fetch tenant data
   async function fetchTenantData() {
     try {
-      const res = await api.get("/tenants/me");
+      const res = await api.get<TenantResponse>("/tenants/me");
       setTenant(res.data.tenant);
       setUsers(res.data.users);
     } catch (err) {
@@ -33,6 +41,7 @@ export default function AdminDashboard() {
     }
   }
 
+  // Toggle plan
   async function togglePlan() {
     if (!tenant) return;
     try {
@@ -43,7 +52,7 @@ export default function AdminDashboard() {
         await api.post(`/tenants/${tenant.slug}/downgrade`);
         alert("Plan downgraded to Free!");
       }
-      fetchTenantData();
+      fetchTenantData(); // Refresh tenant info
     } catch (err) {
       console.error("Plan change failed", err);
     }
