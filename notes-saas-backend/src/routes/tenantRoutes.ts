@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { upgradeTenant } from "../controllers/tenantControllers";
+import { upgradeTenant } from "../controllers/tenantController";
 import { authMiddleware } from "../middleware/auth";
 
 const router = Router();
