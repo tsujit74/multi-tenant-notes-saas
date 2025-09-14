@@ -14,7 +14,6 @@ interface LoginResponse {
   token: string;
 }
 
-
 export async function login(email: string, password: string) {
   try {
     const res = await api.post<LoginResponse>("/auth/login", { email, password });
@@ -24,7 +23,6 @@ export async function login(email: string, password: string) {
       throw new Error("Login failed: No token returned from server");
     }
 
-  
     const user = getUserFromToken(token);
     if (!user) {
       throw new Error("Login failed: Invalid token");
@@ -32,18 +30,23 @@ export async function login(email: string, password: string) {
 
     localStorage.setItem("token", token);
     return { token, user };
-  } catch (err: any) {
-   
-    if (err.response?.data?.error) {
-      throw new Error(err.response.data.error);
+  } catch (err: unknown) {
+    // Axios error type guard
+    if (typeof err === "object" && err !== null && "response" in err) {
+      const axiosErr = err as { response?: { data?: { error?: string } } };
+      if (axiosErr.response?.data?.error) {
+        throw new Error(axiosErr.response.data.error);
+      }
     }
 
-  
-    if (err.message === "Network Error") {
-      throw new Error("Unable to connect to server. Please check your internet.");
+    // Generic error message fallback
+    if (err instanceof Error) {
+      if (err.message === "Network Error") {
+        throw new Error("Unable to connect to server. Please check your internet.");
+      }
+      throw new Error(err.message);
     }
 
-    
     throw new Error("Login failed. Please try again.");
   }
 }
@@ -61,14 +64,12 @@ export function logout() {
 export function getUserFromToken(token: string) {
   try {
     const decoded = jwtDecode<DecodedToken>(token);
-
     return decoded;
   } catch (err) {
     console.error("Invalid token:", err);
     return null;
   }
 }
-
 
 export function isTokenExpired(token: string): boolean {
   try {
