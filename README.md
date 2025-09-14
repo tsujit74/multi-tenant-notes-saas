@@ -95,7 +95,7 @@ This is a SaaS Notes Application with support for multiple tenants (companies), 
 
 ---
 
-## 🌐 Production / Deployed
+## 🌐 Deployed
 
 * Frontend: [https://notes-saas-frontend-tau.vercel.app/](https://notes-saas-frontend-tau.vercel.app/)
 * Backend: [https://notes-saas-backend-chi.vercel.app](https://notes-saas-backend-chi.vercel.app)
@@ -133,18 +133,6 @@ Here are the main endpoints, with authentication & authorization details:
 ## ⚙️ Known issues / future improvements
 
 * No invite user UI yet (Tenant Admin inviting new users can be added).
-* Password reset / email verification not implemented.
-* Styling / UX can be improved.
-* Possibly add tests & better error messages.
-
----
-
-## 📁 Branches & Git Workflow
-
-* `frontend-rbac`: front end features especially RBAC, admin dashboard.
-* `tenant-upgrade`: backend features for upgrade/downgrade, tenant data.
-* After merging both into `main`, `main` branch is stable & production-ready.
-
 
 ---
 
