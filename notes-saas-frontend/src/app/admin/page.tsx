@@ -33,14 +33,19 @@ export default function AdminDashboard() {
     }
   }
 
-  async function upgradePlan() {
+  async function togglePlan() {
     if (!tenant) return;
     try {
-      await api.post(`/tenants/${tenant.slug}/upgrade`);
-      alert("Plan upgraded to Pro!");
+      if (tenant.plan === "free") {
+        await api.post(`/tenants/${tenant.slug}/upgrade`);
+        alert("Plan upgraded to Pro!");
+      } else {
+        await api.post(`/tenants/${tenant.slug}/downgrade`);
+        alert("Plan downgraded to Free!");
+      }
       fetchTenantData();
     } catch (err) {
-      console.error("Upgrade failed", err);
+      console.error("Plan change failed", err);
     }
   }
 
@@ -60,14 +65,16 @@ export default function AdminDashboard() {
             <h2 className="font-semibold">Tenant Info</h2>
             <p>Slug: {tenant.slug}</p>
             <p>Plan: {tenant.plan}</p>
-            {tenant.plan === "free" && (
-              <button
-                onClick={upgradePlan}
-                className="mt-3 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-              >
-                Upgrade to Pro
-              </button>
-            )}
+            <button
+              onClick={togglePlan}
+              className={`mt-3 px-4 py-2 rounded text-white ${
+                tenant.plan === "free"
+                  ? "bg-blue-600 hover:bg-blue-700"
+                  : "bg-red-600 hover:bg-red-700"
+              }`}
+            >
+              {tenant.plan === "free" ? "Upgrade to Pro" : "Downgrade to Free"}
+            </button>
           </div>
         )}
 
